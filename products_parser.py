@@ -1,13 +1,15 @@
 import random
+from datetime import datetime
 from time import sleep
 
 import requests
 from bs4 import BeautifulSoup
 from loguru import logger
 
+from config import settings
 from customs_utils import check_fields, find_item_quantity, find_item_weight, insert_products_data_in_csv_file
-from consts import URL, HEADERS, CURRENT_DATE
 
+CURRENT_DATE = datetime.now().strftime("%m_%d_%Y (%H:%M)")
 logger.add("./logs/products_parser.txt", format="{time} {level} {message}", level="DEBUG", rotation="10 Mb", compression="zip")
 
 
@@ -15,15 +17,15 @@ def get_urls_for_current_pet_products(name: str, page_count: int) -> list:
     urls = []
     for count in range(1, page_count + 1):
         pet_category_url = f"https://zootovary.ru/catalog/tovary-i-korma-dlya-{name}/?s=price&PAGEN_1={count}"
-        response = requests.get(pet_category_url, HEADERS)
+        response = requests.get(pet_category_url, settings.headers)
         logger.info(f"Успешно сделали запрос к {pet_category_url}")
-        sleep(random.randint(0, 3))
+        sleep(random.randint(*settings.daley_range_s))
 
         soup = BeautifulSoup(response.text, "lxml")
         products_list_data = soup.find("div", class_="catalog-section").find_all("div", class_="catalog-content-info")
         for item in products_list_data:
             url_tail = item.find("a").get("href")
-            full_url = f"{URL}" + f"{url_tail}"
+            full_url = f"{settings.url}" + f"{url_tail}"
             urls.append(full_url)
     logger.info(f"Успешно собрали коллецию urls для {name} ")
     return urls
@@ -32,9 +34,9 @@ def get_urls_for_current_pet_products(name: str, page_count: int) -> list:
 def get_data_for_all_products_items(body: list) -> None:
     items_list_data = []
     for item in body:
-        response = requests.get(item, headers=HEADERS)
+        response = requests.get(item, headers=settings.headers)
         logger.info(f"Успешно сделали запрос к {item}")
-        sleep(random.randint(0, 3))
+        sleep(random.randint(*settings.daley_range_s))
 
         soup = BeautifulSoup(response.text, "lxml")
         item_data = soup.find("div", class_="catalog-element-right")

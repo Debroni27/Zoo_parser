@@ -7,20 +7,21 @@ from time import sleep
 
 from loguru import logger
 from bs4 import BeautifulSoup
-from consts import URL, HEADERS, TABLE_HEADERS_CATEGORIES, TABLE_HEADERS_FULL_REPORT
+from config import settings
+
 
 logger.add("logs/base_utils_parser.txt", format="{time} {level} {message}", level="DEBUG", rotation="10 Mb", compression="zip")
 
 
 def prepare_base_object_for_bs4():
     try:
-        response = requests.get(url=URL, headers=HEADERS)
+        response = requests.get(url=settings.url, headers=settings.headers)
         soup_obj = BeautifulSoup(response.text, "lxml")
-        logger.info(f"Успешно сделали запрос к {URL}")
-        sleep(random.randint(0, 3))
+        logger.info(f"Успешно сделали запрос к {settings.url}")
+        sleep(random.randint(*settings.daley_range_s))
         return soup_obj
     except:
-        logger.error(f"Достигнут лимит обращения к {URL}")
+        logger.error(f"Достигнут лимит обращения к {settings.url}")
 
 
 @logger.catch
@@ -54,10 +55,10 @@ def find_item_quantity(attr: str):
 
 @logger.catch
 def insert_categories_data_in_csv_file(category_name: str, body: list) -> None:
-    with open(f"./out/list_categories/category_report_{category_name}.csv", "a", encoding="UTF8", newline="") as file:
+    with open(f"{settings.output_directory}/list_categories/category_report_{category_name}.csv", "a", encoding="UTF8", newline="") as file:
         writer = csv.writer(file)
         writer.writerow(
-            TABLE_HEADERS_CATEGORIES
+            settings.table_headers_categories
         )
         writer.writerows(
             body
@@ -65,14 +66,11 @@ def insert_categories_data_in_csv_file(category_name: str, body: list) -> None:
 
 
 @logger.catch
-def insert_products_data_in_csv_file( body: list) -> None:
-    """
-        Добавляет данные в csv файл
-    """
-    with open(f"./out/list_products/products_report.csv", "a", encoding="UTF8", newline="") as file:
+def insert_products_data_in_csv_file(body: list) -> None:
+    with open(f"{settings.output_directory}/list_products/products_report.csv", "a", encoding="UTF8", newline="") as file:
         writer = csv.writer(file, delimiter=';')
         writer.writerow(
-            TABLE_HEADERS_FULL_REPORT
+            settings.table_headers_products
         )
         writer.writerows(
             body

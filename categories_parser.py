@@ -3,6 +3,8 @@ import csv
 from loguru import logger
 from customs_utils import prepare_base_object_for_bs4, insert_categories_data_in_csv_file
 
+from config import settings
+
 logger.add("logs/categories_parser.txt", format="{time} {level} {message}", level="DEBUG", rotation="10 Mb", compression="zip")
 
 

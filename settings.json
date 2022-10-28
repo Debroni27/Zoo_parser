@@ -19,5 +19,27 @@
   "restart": {
     "restart_count": 3,
     "interval_m": 0.2
-  }
+  },
+  "url": "https://zootovary.ru",
+  "table_headers_categories": [
+    "name",
+    "id",
+    "parent_id"
+  ],
+  "table_headers_products": [
+    "price_datatime",
+    "price",
+    "price_promo",
+    "sku_status",
+    "sku_barcode",
+    "sku_article",
+    "sku_name",
+    "sku_category",
+    "sku_country",
+    "sku_weight_min",
+    "sku_volume_min",
+    "sku_quantity_min",
+    "sku_link",
+    "sku_images"
+  ]
 }
