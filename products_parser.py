@@ -5,33 +5,39 @@ from time import sleep
 import requests
 from bs4 import BeautifulSoup
 from loguru import logger
+from retry import retry
 
 from config import settings
 from customs_utils import check_fields, find_item_quantity, find_item_weight, insert_products_data_in_csv_file
 
 CURRENT_DATE = datetime.now().strftime("%m_%d_%Y (%H:%M)")
-logger.add("./logs/products_parser.txt", format="{time} {level} {message}", level="DEBUG", rotation="10 Mb", compression="zip")
+logger.add(f"{settings.logs_dir}/products_parser.txt", format="{time} {level} {message}", level="DEBUG", rotation="10 Mb", compression="zip")
 
 
-def get_urls_for_current_pet_products(name: str, page_count: int) -> list:
+@retry(delay=random.randint(*settings.daley_range_s), tries=random.randint(*settings.max_retries))
+def get_urls_for_current_pet_products() -> list:
+    names = settings.pets_in_categories
+    if len(names) == 0:
+        names = settings.pets_in_categories_full
     urls = []
-    for count in range(1, page_count + 1):
-        pet_category_url = f"https://zootovary.ru/catalog/tovary-i-korma-dlya-{name}/?s=price&PAGEN_1={count}"
-        response = requests.get(pet_category_url, settings.headers)
-        logger.info(f"Успешно сделали запрос к {pet_category_url}")
-        sleep(random.randint(*settings.daley_range_s))
-
-        soup = BeautifulSoup(response.text, "lxml")
-        products_list_data = soup.find("div", class_="catalog-section").find_all("div", class_="catalog-content-info")
-        for item in products_list_data:
-            url_tail = item.find("a").get("href")
-            full_url = f"{settings.url}" + f"{url_tail}"
-            urls.append(full_url)
-    logger.info(f"Успешно собрали коллецию urls для {name} ")
+    for name in names:
+        for count in range(*settings.page_count):
+            pet_category_url = f"https://zootovary.ru/catalog/tovary-i-korma-dlya-{name}/?s=price&PAGEN_1={count}"
+            response = requests.get(pet_category_url, settings.headers)
+            logger.info(f"Успешно сделали запрос к {pet_category_url}")
+            sleep(random.randint(*settings.daley_range_s))
+            soup = BeautifulSoup(response.text, "lxml")
+            products_list_data = soup.find("div", class_="catalog-section").find_all("div", class_="catalog-content-info")
+            for item in products_list_data:
+                url_tail = item.find("a").get("href")
+                full_url = f"{settings.url}" + f"{url_tail}"
+                urls.append(full_url)
+        logger.info(f"Успешно собрали коллецию urls для {name} ")
     return urls
 
 
-def get_data_for_all_products_items(body: list) -> None:
+@retry(delay=random.randint(*settings.daley_range_s), tries=random.randint(*settings.max_retries))
+def get_all_products_in_current_pet_category(body: list) -> None:
     items_list_data = []
     for item in body:
         response = requests.get(item, headers=settings.headers)
@@ -90,12 +96,14 @@ def get_data_for_all_products_items(body: list) -> None:
             ]
             items_list_data.append(item_body)
             logger.info(f"Обработали данные по {item_name}")
-    insert_products_data_in_csv_file(items_list_data)
+        insert_products_data_in_csv_file(items_list_data)
     logger.info(f"Данные успешно записаны! Количество записей: {len(items_list_data)}")
 
 
+@logger.catch
+@retry(delay=random.randint(*settings.daley_range_s), tries=random.randint(*settings.max_retries))
 def main():
-    get_data_for_all_products_items(get_urls_for_current_pet_products("sobak", 3))
+    get_all_products_in_current_pet_category(get_urls_for_current_pet_products())
 
 
 if __name__ == "__main__":

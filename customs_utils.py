@@ -5,14 +5,16 @@ import requests
 
 from time import sleep
 
+from retry import retry
 from loguru import logger
 from bs4 import BeautifulSoup
 from config import settings
 
 
-logger.add("logs/base_utils_parser.txt", format="{time} {level} {message}", level="DEBUG", rotation="10 Mb", compression="zip")
+logger.add(f"{settings.logs_dir}/base_utils_parser.txt", format="{time} {level} {message}", level="DEBUG", rotation="10 Mb", compression="zip")
 
 
+@retry(delay=random.randint(*settings.daley_range_s), tries=random.randint(*settings.max_retries))
 def prepare_base_object_for_bs4():
     try:
         response = requests.get(url=settings.url, headers=settings.headers)
