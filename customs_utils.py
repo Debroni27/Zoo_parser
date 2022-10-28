@@ -15,14 +15,15 @@ logger.add(f"{settings.logs_dir}/base_utils_parser.txt", format="{time} {level} 
 
 
 @retry(delay=random.randint(*settings.daley_range_s), tries=random.randint(*settings.max_retries))
-def prepare_base_object_for_bs4():
+def prepare_base_object_for_bs4(url: str):
     try:
-        response = requests.get(url=settings.url, headers=settings.headers)
+        response = requests.get(url=url, headers=settings.headers)
         soup_obj = BeautifulSoup(response.text, "lxml")
-        logger.info(f"Успешно сделали запрос к {settings.url}")
+        logger.info(f"Успешно сделали запрос к {url}")
         sleep(random.randint(*settings.daley_range_s))
         return soup_obj
     except:
+        retry(delay=random.randint(*settings.daley_range_s), tries=random.randint(*settings.max_retries))
         logger.error(f"Достигнут лимит обращения к {settings.url}")
 
 
@@ -56,23 +57,11 @@ def find_item_quantity(attr: str):
 
 
 @logger.catch
-def insert_categories_data_in_csv_file(category_name: str, body: list) -> None:
-    with open(f"{settings.output_directory}/list_categories/category_report_{category_name}.csv", "a", encoding="UTF8", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow(
-            settings.table_headers_categories
-        )
-        writer.writerows(
-            body
-        )
-
-
-@logger.catch
-def insert_products_data_in_csv_file(body: list) -> None:
-    with open(f"{settings.output_directory}/list_products/products_report.csv", "a", encoding="UTF8", newline="") as file:
+def insert_data_in_csv_file(name: str, body: list) -> None:
+    with open(f"{settings.output_directory}/{name}_report.csv", "a", encoding="UTF8", newline="") as file:
         writer = csv.writer(file, delimiter=';')
         writer.writerow(
-            settings.table_headers_products
+            settings.table_headers_categories
         )
         writer.writerows(
             body

@@ -18,6 +18,11 @@
 
     pip install -r req.txt
 
+Запускаем скрипты (после конфигурации парсера):
+
+    python categories_parser.py (парсинг категорий)
+    python products_parser.py (парсинг продуктов)
+
 Данные для конфигурации парсера берутся из файла:
 
     ./settings.json
