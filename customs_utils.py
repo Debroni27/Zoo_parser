@@ -40,18 +40,30 @@ def check_fields(filed_name):
 
 @logger.catch
 def find_item_weight(attr: str):
-    if re.search("\d", attr) and re.search("гр|Г", attr):
-        result = re.search("\d[0-9]", attr)
-        return result.group(0) + ' гр'
+    result = re.search("гр|Г|г", attr)
+    if result is not None:
+        result = result.group(0)
+        result_int = re.search(f"\d[0-9]\s{result}|\d[0-9]{result}", attr)
+        if result_int is not None:
+            result_int = result_int.group(0)
+            return result_int
+        else:
+            return result
     else:
         return None
 
 
 @logger.catch
 def find_item_quantity(attr: str):
-    split_attr = attr.split()
-    if re.search("\d", attr) and re.search("[шт-ш]", attr):
-        return "шт"
+    result = re.search("шт|ШТ|Шт", attr)
+    if result is not None:
+        result = result.group(0)
+        result_int = re.search(f"\d[0-9]\s{result}|\d[0-9]{result}", attr)
+        if result_int is not None:
+            result_int = result_int.group(0)
+            return result_int
+        else:
+            return result
     else:
         return None
 
