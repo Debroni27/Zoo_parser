@@ -5,7 +5,6 @@ from time import sleep
 import requests
 from bs4 import BeautifulSoup
 from loguru import logger
-from retry import retry
 
 from config import settings
 from customs_utils import check_fields, find_item_quantity, find_item_weight, insert_data_in_csv_file, \
@@ -48,7 +47,7 @@ def get_all_products_in_current_pet_category(body: list) -> None:
         item_barcode = check_fields(item_data.find("table").find("td").find_next_sibling("td").find("b").find_next_sibling("b")) if item_price is not None else None
         item_article = check_fields(item_data.find("table").find("td").find("b").find_next_sibling("b")) if item_price is not None else None
         item_volume_min = check_fields(item_data.find("table").find("td").find_next_sibling("td").find_next_sibling("td").find_next_sibling("b")) if item_price is not None else None
-        item_name = check_fields(item_data.find("h1"))
+        item_name = check_fields(item_data.find("h1")).replace("/", " ")
         item_category = [
             i.text for i in soup.find("ul", class_="breadcrumb-navigation").find_all("a")
         ]

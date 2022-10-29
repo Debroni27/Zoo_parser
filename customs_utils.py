@@ -58,10 +58,16 @@ def find_item_quantity(attr: str):
 
 @logger.catch
 def insert_data_in_csv_file(name: str, body: list) -> None:
-    with open(f"{settings.output_directory}/{name}_report.csv", "a", encoding="UTF8", newline="") as file:
+    if re.search("^Товары", name):
+        headers = settings.table_headers_categories
+        folder_object = "categories"
+    else:
+        headers = settings.table_headers_products
+        folder_object = "products"
+    with open(f"{settings.output_directory}/{folder_object}/{name}_report.csv", "a", encoding="UTF8", newline="") as file:
         writer = csv.writer(file, delimiter=';')
         writer.writerow(
-            settings.table_headers_categories
+            headers
         )
         writer.writerows(
             body
