@@ -40,9 +40,9 @@ def check_fields(filed_name):
 
 @logger.catch
 def find_item_weight(attr: str):
-    slit_attr = attr.split()
-    if re.search("гр", slit_attr[-1]):
-        return slit_attr[-1]
+    if re.search("\d", attr) and re.search("гр|Г", attr):
+        result = re.search("\d[0-9]", attr)
+        return result.group(0) + ' гр'
     else:
         return None
 
@@ -50,8 +50,8 @@ def find_item_weight(attr: str):
 @logger.catch
 def find_item_quantity(attr: str):
     split_attr = attr.split()
-    if re.search("шт", split_attr[-3] + split_attr[-2]):
-        return split_attr[-3] + split_attr[-2]
+    if re.search("\d", attr) and re.search("[шт-ш]", attr):
+        return "шт"
     else:
         return None
 

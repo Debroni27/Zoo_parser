@@ -1,9 +1,6 @@
-import random
-from datetime import datetime
-from time import sleep
 
-import requests
-from bs4 import BeautifulSoup
+from datetime import datetime
+
 from loguru import logger
 
 from config import settings
@@ -15,28 +12,25 @@ logger.add(f"{settings.logs_dir}/products_parser.txt", format="{time} {level} {m
 
 
 @logger.catch
-def get_urls_for_current_pet_products() -> list:
+def get_all_products_in_current_pet_category() -> None:
     names = settings.pets_in_categories
     if len(names) == 0:
         names = settings.pets_in_categories_full
-    urls = []
     for name in names:
+        urls = []
         for count in range(*settings.page_count):
             pet_category_url = f"https://zootovary.ru/catalog/tovary-i-korma-dlya-{name}/?s=price&PAGEN_1={count}"
-            response = requests.get(pet_category_url, settings.headers)
-            logger.info(f"Успешно сделали запрос к {pet_category_url}")
-            sleep(random.randint(*settings.daley_range_s))
-            soup = BeautifulSoup(response.text, "lxml")
+            soup = prepare_base_object_for_bs4(pet_category_url)
             products_list_data = soup.find("div", class_="catalog-section").find_all("div", class_="catalog-content-info")
             for item in products_list_data:
                 url_tail = item.find("a").get("href")
                 full_url = f"{settings.url}" + f"{url_tail}"
                 urls.append(full_url)
+        prepare_all_products_in_current_pet_category(name, urls)
         logger.info(f"Успешно собрали коллецию urls для {name} ")
-    return urls
 
 
-def get_all_products_in_current_pet_category(body: list) -> None:
+def prepare_all_products_in_current_pet_category(name: str, body: list) -> None:
     items_list_data = []
     for item in body:
         soup = prepare_base_object_for_bs4(item)
@@ -65,13 +59,13 @@ def get_all_products_in_current_pet_category(body: list) -> None:
         ]
         items_list_data.append(item_body)
         logger.info(f"Обработали данные по {item_name}")
-        insert_data_in_csv_file(f"{item_name}", items_list_data)
+    insert_data_in_csv_file(f"{name}", items_list_data)
     logger.info(f"Данные успешно записаны! Количество записей: {len(items_list_data)}")
 
 
 @logger.catch
 def main():
-    get_all_products_in_current_pet_category(get_urls_for_current_pet_products())
+    get_all_products_in_current_pet_category()
 
 
 if __name__ == "__main__":

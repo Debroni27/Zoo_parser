@@ -13,7 +13,8 @@
     "Товары и корма для хорьков"
   ],
   "pets_in_categories": [
-    "sobak"
+    "sobak",
+    "koshek"
   ],
   "pets_in_categories_full": [
     "sobak",
@@ -58,7 +59,7 @@
     "sku_images"
   ],
   "page_count": [
-    0,
-    2
+    1,
+    3
   ]
 }
