@@ -7,6 +7,10 @@
 
 ИНСТРУКЦИЯ:
 
+Копируем локально проект в папку для работы с проектом:
+
+    git clone https://github.com/Debroni27/Zoo_parser.git
+
 Устанавливаем и активируем виртуальное окружение:
 
     python/python3 -m venv venv
