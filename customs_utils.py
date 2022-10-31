@@ -14,7 +14,6 @@ from config import settings
 logger.add(f"{settings.logs_dir}/base_utils_parser.txt", format="{time} {level} {message}", level="DEBUG", rotation="10 Mb", compression="zip")
 
 
-@retry(delay=random.randint(*settings.daley_range_s), tries=random.randint(*settings.max_retries))
 def prepare_base_object_for_bs4(url: str):
     try:
         response = requests.get(url=url, headers=settings.headers)
@@ -40,7 +39,7 @@ def check_fields(filed_name):
 
 @logger.catch
 def find_item_weight(attr: str):
-    result = re.search("гр|Г|г", attr)
+    result = re.search("гр|ГР|Гр", attr)
     if result is not None:
         result = result.group(0)
         result_int = re.search(f"\d[0-9]\s{result}|\d[0-9]{result}", attr)
